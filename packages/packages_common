@@ -1,4 +1,0 @@
-#!/bin/sh
-apt-get update
-apt-get upgrade
-apt-get install mc debconf-utils git crudini ca-certificates

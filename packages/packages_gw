@@ -1,3 +1,0 @@
-#!/bin/sh
-./packages_common
-apt-get install dnsmasq shorewall openvpn ca-certificates

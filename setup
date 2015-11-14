@@ -1,0 +1,45 @@
+#!/bin/bash
+SOFT='Kosher-Config-Generator'
+
+$(cd packages; ./locales; ./tz)
+
+FQDN=$(hostname -f)
+IFS=. read HOSTNAME CPART CNAME BLA < <(echo $FQDN)
+[ x$HOSTNAME = xgw ] && LANDEV=lan0 || LANDEV=eth0
+IP=$(ip addr show dev $LANDEV 2>/dev/null | awk '/inet .* brd .* scope/{sub(/\/.*/,"",$2); print $2}')  ##'
+IFS=. read PNET CNET CSUB CIPN < <(echo $IP)
+
+
+echo "Check setup data"
+echo "hostname: $FQDN"
+echo "ip:       $IP"
+echo -n "Its OK - Continue?(y/N)"
+read ok
+[ x$ok = xy ] || exit 1
+
+
+[ x$PNET != 'x10' ] && echo error: not 10.x.x.x network  && exit 1
+[ x$BLA != 'xbla' ] && echo error: not bla network  && exit 1
+[ -z CNET ] || [ -z CSUB ] || [ -z CPART ] || [ -z CNAME ] && cat <<EOF
+Error: Empty VARS!
+CNET $CNET
+CSUB $CSUB
+CPART $CPART 
+CNAME $CNAME
+EOF
+
+PACKAGES_COMMON='mc debconf-utils crudini ca-certificates'
+
+export HOSTNAME CNET CSUB CPART CNAME PACKAGES_COMMON
+
+[ x$HOSTNAME = xpm1 ] $$ ./apt
+
+
+apt-get update
+apt-get upgrade
+
+cd packages;
+[ -x ./$HOSTNAME ] && ./$HOSTNAME
+
+
+

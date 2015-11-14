@@ -1,0 +1,2 @@
+#!/bin/sh
+apt-get install $PACKAGES_COMMON dnsmasq shorewall openvpn

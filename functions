@@ -1,0 +1,23 @@
+SOFT='Kosher-Config-Generator'
+
+getipdev() {
+    ip addr show dev $1 2>/dev/null | awk '/inet .* brd .* scope/{sub(/\/.*/,"",$2); print $2}'
+}
+getip() {
+    IP=$(getipdev eth0)
+    [ -z $IP ] && IP=$(getipdev lan0)
+    echo $IP
+}
+
+read PNET CNET CSUB CIPN < <(IFS=. getip)
+[ x$PNET != 'x10' ] && echo error: not 10.x.x.x network  && exit 1
+read CPART CNAME BLA < <(hostname -d | sed -e's/\./ /g')
+[ x$BLA != 'xbla' ] && echo error: not bla network  && exit 1
+
+[ -z CNET ] || [ -z CSUB ] || [ -z CPART ] || [ -z CNAME ] && cat <<EOF
+Error: Empty VARS!
+CNET $CNET
+CSUB $CSUB
+CPART $CPART 
+CNAME $CNAME
+EOF

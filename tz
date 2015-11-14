@@ -1,0 +1,5 @@
+#!/bin/sh
+
+export DEBIAN_FRONTEND=noninteractive
+echo "Europe/Kiev" > /etc/timezone
+dpkg-reconfigure tzdata

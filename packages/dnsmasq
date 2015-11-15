@@ -57,6 +57,13 @@ EOF
 
 FILE=/etc/dnsmasq.d/hosts.conf
 [ ! -f $FILE ] && cat <<EOF > $FILE
+dhcp-host=proxy,10.$CNET.$CSUB.2, infinite
+dhcp-host=mail, 10.$CNET.$CSUB.3, infinite
+dhcp-host=ap,   10.$CNET.$CSUB.5, infinite
+dhcp-host=pdc,  10.$CNET.$CSUB.6, infinite
+dhcp-host=bdc,  10.$CNET.$CSUB.7, infinite
+dhcp-host=dc,   10.$CNET.$CSUB.8, infinite
+dhcp-host=ts,   10.$CNET.$CSUB.10,infinite
 
 
 

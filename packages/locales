@@ -19,21 +19,5 @@ sed --regexp-extended --expression='
 
 echo 'locales locales/default_environment_locale select C.UTF-8' | debconf-set-selections 
 
-export DEBIAN_FRONTEND=noninteractive
-dpkg-reconfigure locales
-#dpkg-reconfigure --frontend=noninteractive locales
-
-
-exit
-
-
-locales	locales/default_environment_locale	select	C.UTF-8
-
-
-echo 'LANG=C.UTF-8'> /etc/default/locale
-
-locales	locales/locales_to_be_generated	multiselect	en_US.UTF-8 UTF-8, ru_UA.UTF-8 UTF-8, uk_UA.UTF-8 UTF-8
-/etc/locale.gen 
-
-   /^(en|ru|ua)(_[[:upper:]]+)?(\.UTF-8)?(@[^[:space:]]+)?[[:space:]]+UTF-8$/!   s/^/# /
+dpkg-reconfigure --frontend=noninteractive locales
 

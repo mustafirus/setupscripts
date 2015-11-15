@@ -1,2 +1,5 @@
 ENTRY "/etc" URL "/etc"
 ENTRY "/var/log" URL "/var/log"
+ENTRY "/etc/dnsmasq.d" URL "/etc/dnsmasq.d"
+ENTRY "/etc/shorewall" URL "/etc/shorewall"
+ENTRY "/etc/openvpn" URL "/etc/openvpn"

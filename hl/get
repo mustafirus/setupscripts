@@ -1,0 +1,5 @@
+#!/bin/bash
+
+HOSTNAME=$(hostname)
+mv -f hotlist.$HOSTNAME hotlist.$HOSTNAME.bak
+cp -a ~/.config/mc/hotlist hotlist.$HOSTNAME

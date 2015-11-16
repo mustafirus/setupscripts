@@ -1,0 +1,4 @@
+
+grep -q $ADMINEMAIL /etc/aliases || echo root: $ADMINEMAIL >>/etc/aliases
+dpkg-reconfigure postfix
+

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+HOSTNAME=$(hostname)
+[ -e ~/.config/mc/hotlist ] || cp -a hotlist.$HOSTNAME ~/.config/mc/hotlist

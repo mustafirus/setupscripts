@@ -38,8 +38,10 @@ EOF
 
 export FQDN HOSTNAME CNET CSUB CPART CNAME SOFT ADMINEMAIL
 
-#apt-get update
-#apt-get upgrade
+apt-get update
+apt-get upgrade
+
+~/setupscripts/packages/postfix
 
 [ -r ./$HOSTNAME.conf ] || exit 1
 
@@ -51,6 +53,9 @@ MODULES_ALL="$MODULES_ALL $MODULES"
 . ./$HOSTNAME.conf
 PACKAGES_ALL="$PACKAGES_ALL $PACKAGES"
 MODULES_ALL="$MODULES_ALL $MODULES"
+
+apt-get install $PACKAGES_ALL
+
 
 CONF=/tmp/conf
 DEST=/tmp/test

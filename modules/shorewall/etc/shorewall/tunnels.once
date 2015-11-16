@@ -9,4 +9,4 @@
 ###############################################################################
 #TYPE			ZONE	GATEWAY(S)			GATEWAY
 #								ZONE(S)
-openvpnclient		net	vpn.nt.net.ua
+openvpnclient		net	$VPNAP

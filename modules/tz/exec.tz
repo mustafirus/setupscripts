@@ -1,3 +1,0 @@
-
-echo "Europe/Kiev" > /etc/timezone
-dpkg-reconfigure --frontend=noninteractive tzdata

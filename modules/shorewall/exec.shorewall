@@ -1,5 +1,5 @@
 #!/bin/bash
 
-crudini --set /etc/default/shorewall '' startup 1
-service shorewall restart
+#crudini --set /etc/default/shorewall '' startup 1
+#service shorewall restart
 

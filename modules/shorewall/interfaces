@@ -1,0 +1,15 @@
+#
+# Shorewall version 4 - Interfaces File
+#
+# For information about entries in this file, type "man shorewall-interfaces"
+#
+# The manpage is also online at
+# http://www.shorewall.net/manpages/shorewall-interfaces.html
+#
+###############################################################################
+?FORMAT 2
+###############################################################################
+#ZONE		INTERFACE		OPTIONS
+net     wan0            detect          tcpflags,nosmurfs,routefilter,logmartians
+loc     lan0            detect          dhcp,tcpflags,nosmurfs,routefilter
+org     tap0            detect          tcpflags,nosmurfs,routefilter,logmartians

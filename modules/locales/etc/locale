@@ -1,0 +1,13 @@
+#!/bin/bash
+
+L1="en_US.UTF-8 UTF-8
+ru_UA.UTF-8 UTF-8
+uk_UA.UTF-8 UTF-8"
+L2="LANG=C.UTF-8"
+
+[ "$L1" = "$(sed -e'/^#/d' -e'/^$/d' /etc/locale.gen)" ] && \
+[ "$L2" = "$(sed -e'/^#/d' -e'/^$/d' /etc/default/locale)" ] && \
+exit
+echo "$L1" > /etc/locale.gen
+echo "$L2" > /etc/default/locale
+dpkg-reconfigure -fnoninteractive locales

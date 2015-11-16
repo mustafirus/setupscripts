@@ -1,0 +1,3 @@
+
+dpkg-reconfigure --frontend=noninteractive locales
+

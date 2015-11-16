@@ -7,19 +7,32 @@ DEST=/
 ADMINEMAIL=golubev@nt.net.ua
 VPNAP=vpn.nt.net.ua
 
+while getopts d: OPT; do
+    case "$OPT" in
+      d)
+        DEBUGMOD="$OPTARG" ;;
+      [?])
+        # got invalid option
+        echo "Usage: $0 [-d module]" >&2
+        exit 1 ;;
+    esac
+done
+
+
 FQDN=$(hostname -f)
 IFS=. read HOSTNAME CPART CNAME BLA < <(echo $FQDN)
 [ x$HOSTNAME = xgw ] && LANDEV=lan0 || LANDEV=eth0
 IP=$(ip addr show dev $LANDEV 2>/dev/null | awk '/inet .* brd .* scope/{sub(/\/.*/,"",$2); print $2}')  ##'
 IFS=. read PNET CNET CSUB CIPN < <(echo $IP)
 
+if [ -z $DEBUGMOD ] ; then
 echo "Check setup data"
 echo "hostname: $FQDN"
 echo "ip:       $IP"
 echo -n "Its OK - Continue?(y/N)"
 read ok
 [ x$ok = xy ] || [ x$ok = xY ] || exit 1
-
+fi
 
 [ x$PNET != 'x10' ] && echo error: not 10.x.x.x network  && exit 1
 [ x$BLA != 'xbla' ] && echo error: not bla network  && exit 1
@@ -35,6 +48,7 @@ export FQDN HOSTNAME CNET CSUB CPART CNAME SOFT ADMINEMAIL
 
 ./scripts/apt_pm1
 
+if [ -z $DEBUGMOD ] ; then
 apt-get update
 apt-get upgrade
 
@@ -51,6 +65,10 @@ PACKAGES_ALL="$PACKAGES_ALL $PACKAGES"
 MODULES_ALL="$MODULES_ALL $MODULES"
 
 apt-get install $PACKAGES_ALL
+
+else
+    MODULES_ALL="$DEBUGMOD"
+fi
 
 
 CONF=/tmp/conf

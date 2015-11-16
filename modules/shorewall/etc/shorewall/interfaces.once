@@ -10,6 +10,6 @@
 ?FORMAT 2
 ###############################################################################
 #ZONE		INTERFACE		OPTIONS
-net     wan0            detect          tcpflags,nosmurfs,routefilter,logmartians
-loc     lan0            detect          dhcp,tcpflags,nosmurfs,routefilter
-org     tap0            detect          tcpflags,nosmurfs,routefilter,logmartians
+net		wan0			tcpflags,nosmurfs,routefilter,logmartians
+loc		lan0			dhcp,tcpflags,nosmurfs,routefilter
+org		tap0			tcpflags,nosmurfs,routefilter,logmartians

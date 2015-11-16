@@ -12,4 +12,5 @@
 ####################################################################################################################################################
 #ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	USER	TEST	LENGTH	TOS	CONNBYTES	HELPER	PROBABILITY	DSCP
 #							PORT(S)	PORT(S)
-CHECKSUM:T	$FW		lan0		udp	bootpc
+CHECKSUM:T	-		lan0		udp	bootpc
+#CHECKSUM:T	$FW		lan0		udp	68

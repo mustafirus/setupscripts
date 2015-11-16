@@ -1,5 +1,8 @@
 #!/bin/bash
 
-#crudini --set /etc/default/shorewall '' startup 1
-#service shorewall restart
+crudini --set /etc/default/shorewall '' startup 1
+crudini --set --existing /etc/shorewall/shorewall.conf  '' DISABLE_IPV6 Yes
+crudini --set --existing /etc/shorewall/shorewall.conf  '' IP_FORWARDING Yes
+
+service shorewall restart
 

@@ -25,6 +25,8 @@ IFS=. read HOSTNAME CPART CNAME BLA < <(echo $FQDN)
 IP=$(ip addr show dev $LANDEV 2>/dev/null | awk '/inet .* brd .* scope/{sub(/\/.*/,"",$2); print $2}')  ##'
 IFS=. read PNET CNET CSUB CIPN < <(echo $IP)
 
+[ "$CPART" = "ovh" ] && PROVIDER_NAMESERVER='213.186.33.99'
+
 if [ -z $DEBUGMOD ] ; then
 echo "Check setup data"
 echo "hostname: $FQDN"
@@ -44,7 +46,7 @@ CPART $CPART
 CNAME $CNAME
 EOF
 
-export FQDN HOSTNAME CNET CSUB CPART CNAME SOFT ADMINEMAIL
+export FQDN HOSTNAME CNET CSUB CPART CNAME SOFT ADMINEMAIL PROVIDER_NAMESERVER
 
 ./scripts/apt_pm1
 

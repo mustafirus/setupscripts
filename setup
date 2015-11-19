@@ -21,7 +21,9 @@ done
 
 FQDN=$(hostname -f)
 IFS=. read HOSTNAME CPART CNAME BLA < <(echo $FQDN)
-[ x$HOSTNAME = xgw ] && LANDEV=lan0 || LANDEV=eth0
+LANDEV=eth0
+[ x$HOSTNAME = xgw ] && LANDEV=lan0
+[ x$HOSTNAME = xpm1 ] && LANDEV=vmbr0
 IP=$(ip addr show dev $LANDEV 2>/dev/null | awk '/inet .* brd .* scope/{sub(/\/.*/,"",$2); print $2}')  ##'
 IFS=. read PNET CNET CSUB CIPN < <(echo $IP)
 

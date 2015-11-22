@@ -15,6 +15,7 @@
 #?SECTION INVALID
 #?SECTION UNTRACKED
 ?SECTION NEW
+
 LocSrv		loc	fw
 ACCEPT		fw	loc
 NetSrv		net	fw
@@ -24,3 +25,6 @@ ACCEPT		loc	org
 ACCEPT		fw	org
 OrgSrv		org	loc
 OrgSrv		org	fw
+
+PortFwd		net	loc
+PortFwd		fw	loc

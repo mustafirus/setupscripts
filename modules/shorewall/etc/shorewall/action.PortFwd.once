@@ -24,10 +24,6 @@
 #################################################################################################################################################################################################
 #ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/	MARK	CONNLIMIT	TIME         HEADERS         SWITCH        HELPER
 #							PORT	PORT(S)		DEST		LIMIT		GROUP
-
-Ping/ACCEPT
-Trcrt/ACCEPT
-ACCEPT	10.$CNET.$CSUB.1-10.$CNET.$CSUB.9
-ACCEPT	10.$CNET.$CSUB.254
-
+#SMTP(DNAT)	-		mail
+#OpenVPN(DNAT)	-		ap
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

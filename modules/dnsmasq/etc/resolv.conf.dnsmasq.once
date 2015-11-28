@@ -1,2 +1,2 @@
-$PROVIDER_NAMESERVER
+nameserver $PROVIDER_NAMESERVER
 nameserver 8.8.8.8

@@ -1,0 +1,36 @@
+proto udp
+dev tap0
+mode server
+tls-server
+
+
+ifconfig 10.$CNET.254.254 255.255.255.0
+
+ifconfig-pool 10.$CNET.254.100 10.$CNET.254.200 255.255.255.0
+push "route 10.$CNET.0.0 255.255.0.0 10.$CNET.254.254"
+push "dhcp-option DNS 10.$CNET.254.254"
+
+route 10.$CNET.1.0 255.255.255.0 10.$CNET.254.1
+;route 10.$CNET.2.0 255.255.255.0 10.$CNET.254.2
+;route 10.$CNET.3.0 255.255.255.0 10.$CNET.254.3
+;route 10.$CNET.4.0 255.255.255.0 10.$CNET.254.4
+
+
+dh /etc/openvpn/easy-rsa/keys/dh1024.pem
+ca /etc/openvpn/easy-rsa/keys/ca.crt
+cert /etc/openvpn/easy-rsa/keys/server.crt
+key /etc/openvpn/easy-rsa/keys/server.key  # This file should be kept secret
+;crl-verify /etc/openvpn/easy-rsa/keys/crl.pem
+
+ifconfig-pool-persist openvpn-ipp.txt
+status openvpn-status.log
+keepalive 10 60
+comp-lzo
+persist-key
+persist-tun
+verb 4
+
+client-config-dir /etc/openvpn/clients
+ccd-exclusive
+client-to-client
+

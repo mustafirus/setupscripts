@@ -1,0 +1,31 @@
+#!/bin/sh
+[ -z $1 ] && exit
+
+if [ ! -f easy-rsa/keys/$1.key ]; then
+echo gen keys
+cd easy-rsa
+. ./vars
+./pkitool $1
+cd ..
+fi
+
+#mkdir tmp
+cp easy-rsa/keys/ca.crt tmp
+cp easy-rsa/keys/dh1024.pem tmp
+cp easy-rsa/keys/$1.key tmp
+cp easy-rsa/keys/$1.crt tmp
+
+sed -e "$ a \
+dh dh1024.pem \n\
+ca ca.crt \n\
+cert @client@.crt \n\
+key @client@.key \n\
+"  defconfig/server.conf > tmp/$1.conf
+
+tar -czf configs/$1.tar.gz -C tmp .
+#rm -rf tmp
+touch clients/$1
+
+exit
+cert $1.crt
+key $1.key

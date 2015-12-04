@@ -1,0 +1,32 @@
+#!/bin/bash
+[ -z $1 ] && exit
+NAME=$1
+if [ ! -f easy-rsa/keys/$NAME.key ]; then
+echo gen keys
+cd easy-rsa
+. ./vars
+./pkitool $NAME
+cd ..
+fi
+
+EXT=ovpn
+CLSR=user
+
+function prr {
+echo "<$1>" >> tmp/$NAME.$EXT
+cat $2 >> tmp/$NAME.$EXT
+echo "</$1>" >> tmp/$NAME.$EXT
+}
+
+mkdir tmp
+cp defconfig/$CLSR.$EXT tmp/$NAME.$EXT
+prr ca easy-rsa/keys/ca.crt
+prr dh easy-rsa/keys/dh1024.pem
+prr key easy-rsa/keys/$NAME.key
+prr cert easy-rsa/keys/$NAME.crt
+[ "$CLSR" = "client" ] && sed -e's/tcp-client/tcp/' tmp/$NAME.ovpn >tmp/$NAME-ios.ovpn
+tar -czf configs/$NAME.tar.gz -C tmp .
+rm -rf tmp
+touch clients/$1
+
+

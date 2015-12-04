@@ -7,5 +7,6 @@ make-cadir /etc/openvpn/easy-rsa
 sed -i -e "/export KEY_COUNTRY=\"US\"/,+6 c export KEY_COUNTRY=\"UA\"\nexport KEY_CITY=\"Kiev\"\nexport KEY_ORG=\"$CNAME\"\nexport KEY_EMAIL=\"$ADMINMAIL\"\nexport KEY_OU=\"TUN\"\n" /etc/openvpn/easy-rsa/vars
 
 #. ./var
+#./build-dh
 #pkitool --initca
 #pkitool --server server

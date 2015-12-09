@@ -14,7 +14,7 @@ if [ $reason = "BOUND" ]; then
 
     host_name=$(hostname -s)
     olddomain=$(hostname -d)
-    if [ $olddomain != $new_domain_name ]; then
+    if [ "$olddomain" != "$new_domain_name" ]; then
 
         # Update /etc/hosts if needed
         TMPHOSTS=/etc/hosts.dhcp.new

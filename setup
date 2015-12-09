@@ -18,14 +18,21 @@ while getopts d: OPT; do
     esac
 done
 
-
-FQDN=$(hostname -f)
-IFS=. read HOSTNAME CPART CNAME BLA < <(echo $FQDN)
 LANDEV=eth0
 [ x$HOSTNAME = xgw ] && LANDEV=lan0
 [ x$HOSTNAME = xpm1 ] && LANDEV=vmbr0
 IP=$(ip addr show dev $LANDEV 2>/dev/null | awk '/inet .* brd .* scope/{sub(/\/.*/,"",$2); print $2}')  ##'
 IFS=. read PNET CNET CSUB CIPN < <(echo $IP)
+
+
+DHCPHOOKS=/etc/dhcp/dhclient-enter-hooks.d
+if [ ! -x $DHCPHOOKS/sethostname.sh ] ; then
+    cp -a ./scripts/sethostname.sh $DHCPHOOKS
+    ifdown $LANDEV; ifup $LANDEV
+fi
+
+FQDN=$(hostname -f)
+IFS=. read HOSTNAME CPART CNAME BLA < <(echo $FQDN)
 
 [ "$CPART" = "ovh" ] && PROVIDER_NAMESERVER='213.186.33.99'
 

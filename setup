@@ -27,7 +27,7 @@ IFS=. read PNET CNET CSUB CIPN < <(echo $IP)
 
 DHCPHOOKS=/etc/dhcp/dhclient-enter-hooks.d
 if [ ! -x $DHCPHOOKS/setdomain ] ; then
-    cp -a ./scripts/sethostname.sh $DHCPHOOKS
+    cp -a ./scripts/setdomain $DHCPHOOKS
     ifdown $LANDEV; ifup $LANDEV
 fi
 

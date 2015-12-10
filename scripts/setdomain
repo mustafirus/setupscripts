@@ -20,7 +20,7 @@ if [ $reason = "BOUND" ]; then
         TMPHOSTS=/etc/hosts.dhcp.new
         if ! grep "$new_ip_address $host_name.$new_domain_name $host_name" /etc/hosts; then
             # Remove the 127.0.1.1 put there by the debian installer
-            grep -v '127\.0\.1\.1 ' < /etc/hosts > $TMPHOSTS
+            grep -v '127\.0\.1\.1 ' /etc/hosts | grep -v $new_ip_address > $TMPHOSTS
             # Add the our new ip address and name
             echo "$new_ip_address $host_name.$new_domain_name $host_name" >> $TMPHOSTS
             mv $TMPHOSTS /etc/hosts

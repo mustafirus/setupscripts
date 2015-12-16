@@ -1,0 +1,78 @@
+gw dnsmasq forward ad.home.nt.bla -> 10.99.2.8
+
+change /etc/hosts
+    dhcp-hack - change
+	/etc/dhcp/dhclient-enter-hooks.d/setdomain
+	if [ $reason = "BOUND" ]; then
+	+     new_domain_name=ad.$new_domain_name
+	ifdwn ifup
+    static ip
+	proxmox -> vm -> DNS
+	    hostname: dc1
+	    DNS domain: ad.$CNAME.bla
+	    DNS server: 10.$CNET.$CSUB.bla
+
+echo deb http://deb8dev.nt.bla/ jessie-backports main > /etc/apt/sources.list.d/mybackports.list
+apt-get update
+
+
+
+apt-get install samba winbind
+Suggested packages:
+  bind9 bind9utils ctdb ldb-tools ntp smbldap-tools  heimdal-clients
+
+
+
+INSTALL
+
+remove /etc/samba/smb.conf
+samba-tool domain provision --use-rfc2307 --interactive
+
+
+MIGRATE
+
+copy
+sh://pdc/etc/samba/smb.conf
+sh://pdc/var/lib/samba
+sh://pdc/var/run/samba
+to dbdir - pdc
+
+change in pdc/smb.conf
+passdb backend = ldapsam:ldap://10.99.2.6 (ip - not dns name)
+
+backup VM
+
+check lam for correct (all have SID, all have SAMBA Extentions, group Domain Users fill with users)
+
+
+remove /etc/samba/smb.conf
+cd dbdir
+samba-tool domain classicupgrade --dbdir=./ --use-xattrs=yes --realm=ad.home.nt.bla --dns-backend=SAMBA_INTERNAL smb.conf
+save admin password 
+s+A8cddD)w-9w:QK+QMtD_CufGhLT
+samba-tool user setpassword administrator
+
+UPTER INSTALL MIGRATE
+
+service samba restart
+
+
+MF>    sudo samba-tool domain passwordsettings set --complexity=off
+MF>    sudo samba-tool domain passwordsettings set --history-length=0
+MF>    sudo samba-tool domain passwordsettings set --min-pwd-age=0
+MF>    sudo samba-tool domain passwordsettings set --max-pwd-age=0
+
+
+fix resolv.conf
+
+ln -sf /var/lib/samba/private/krb5.conf /etc/krb5.conf
+
+
+maybe optional
+apt-get install heimdal-clients
+
+kinit administrator@AD.HOME.NT.BLA
+klist
+
+
+MIGRATE LADP AUTH SERVICES

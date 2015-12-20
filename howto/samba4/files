@@ -1,6 +1,6 @@
     static ip
 	proxmox -> vm -> DNS
-	    hostname: dc1
+	    hostname: files
 	    DNS domain: ad.$CNAME.bla
 	    DNS server: 10.$CNET.$CSUB.bla
 

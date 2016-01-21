@@ -57,7 +57,7 @@ EOF
 
 export FQDN HOSTNAME CNET CSUB CPART CNAME SOFT ADMINEMAIL PROVIDER_NAMESERVER
 
-./scripts/apt_pm1
+[ -x ./apt/$HOSTNAME ] && ./apt/$HOSTNAME
 
 if [ -z $DEBUGMOD ] ; then
 apt-get update

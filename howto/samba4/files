@@ -2,7 +2,7 @@
 	proxmox -> vm -> DNS
 	    hostname: files
 	    DNS domain: ad.$CNAME.bla
-	    DNS server: 10.$CNET.$CSUB.bla
+	    DNS server: 10.$CNET.$CSUB.1
 
 echo deb http://deb8dev.nt.bla/ jessie-backports main > /etc/apt/sources.list.d/mybackports.list
 apt-get update

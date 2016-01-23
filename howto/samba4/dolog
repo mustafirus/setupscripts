@@ -74,5 +74,6 @@ apt-get install heimdal-clients
 kinit administrator@AD.HOME.NT.BLA
 klist
 
-
-MIGRATE LADP AUTH SERVICES
+IF SOMETHING WRONG 
+# rm -f /etc/smb.conf
+# rm -rf /var/lib/samba/private/*

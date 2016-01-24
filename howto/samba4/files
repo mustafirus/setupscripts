@@ -12,3 +12,9 @@ apt-get update
 apt-get install samba winbind libnss-winbind
 
 make smb.conf
+# /etc/nsswitch.conf
+
+passwd:         compat winbind
+group:          compat winbind
+
+net ads join -U administrator

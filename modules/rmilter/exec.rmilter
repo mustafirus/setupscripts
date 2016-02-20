@@ -1,0 +1,6 @@
+mkdir -p /var/spool/postfix/rmilter
+chown _rmilter:postfix /var/spool/postfix/rmilter
+chmod 750 /var/spool/postfix/rmilter
+#mount -o bind /run/rmilter /var/spool/postfix/rmilter
+#echo '/run/rmilter    /var/spool/postfix/rmilter tmpfs defaults,bind,auto     0 0' >> /etc/fstab
+#usermod -G postfix,adm postfix

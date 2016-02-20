@@ -57,22 +57,37 @@ EOF
 
 export FQDN HOSTNAME CNET CSUB CPART CNAME SOFT ADMINEMAIL PROVIDER_NAMESERVER
 
-[ -x ./apt/$HOSTNAME ] && ./apt/$HOSTNAME
+#[ -x ./apt/$HOSTNAME ] && ./apt/$HOSTNAME
 
 if [ -z $DEBUGMOD ] ; then
-apt-get update
-apt-get upgrade
+#apt-get update
+#apt-get upgrade
 
 
 [ -r ./$HOSTNAME.conf ] || exit 1
 
-PACKAGES_ALL=
 MODULES_ALL=
+PACKAGES_ALL=
+MOD_MUNUS=
+. ./$HOSTNAME.conf
+PACKAGES_ALL="$PACKAGES"
+for MOD in $MODULES ; do
+
+    if [ "${MOD:0:1}" == "-" ]; then 
+	MOD_MINUS="${MOD:1}"
+	continue
+    fi
+    MODULES_ALL="$MODULES_ALL $MOD"
+done
+
 . ./common.conf
 PACKAGES_ALL="$PACKAGES_ALL $PACKAGES"
-MODULES_ALL="$MODULES_ALL $MODULES"
-. ./$HOSTNAME.conf
-PACKAGES_ALL="$PACKAGES_ALL $PACKAGES"
+
+for REM in $MOD_MINUS ; do
+
+    MODULES=$(sed -e "s/\b$REM\b//" <<< $MODULES)
+
+done
 MODULES_ALL="$MODULES_ALL $MODULES"
 
 apt-get install $PACKAGES_ALL

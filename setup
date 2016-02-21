@@ -57,11 +57,11 @@ EOF
 
 export FQDN HOSTNAME CNET CSUB CPART CNAME SOFT ADMINEMAIL PROVIDER_NAMESERVER
 
-#[ -x ./apt/$HOSTNAME ] && ./apt/$HOSTNAME
+[ -x ./apt/$HOSTNAME ] && ./apt/$HOSTNAME
 
 if [ -z $DEBUGMOD ] ; then
-#apt-get update
-#apt-get upgrade
+apt-get update
+apt-get upgrade
 
 
 [ -r ./$HOSTNAME.conf ] || exit 1

@@ -2,4 +2,4 @@ if set network interfaces to static then /etc/interfaces, /etc/reslov.conf and f
 if set network interfaces to dhcp /etc/interfaces gets from dhcp, /etc/reslov.conf from dhcp, fqdn dont set in /etc/hosts,
 hostname in /etc/hosts set to 127.0.1.1
 to set fqdn from dhcp you need copy  setupscripts/scripts/setdomain to /etc/dhcp/dhclient-enter-hooks.d and 
-exec "ifdown eth0; ifup eth0" in shell
+exec "ifdown eth0; ifup eth0" in shell but after reboot it resets to 127.0.1.1

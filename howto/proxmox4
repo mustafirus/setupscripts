@@ -1,3 +1,3 @@
 if set network interfaces to static then /etc/interfaces, /etc/reslov.conf and fqdn in /etc/hosts set from WebUI
-if set network interfaces to dhcp /etc/interfaces from dhcp, /etc/reslov.conf from host, fqdn dont set in /etc/hosts,
+if set network interfaces to dhcp /etc/interfaces gets from dhcp, /etc/reslov.conf from dhcp, fqdn dont set in /etc/hosts,
 hostname in /etc/hosts set to 127.0.1.1

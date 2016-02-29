@@ -1,0 +1,65 @@
+--- etc.bak/rmilter.conf.common	2016-01-21 17:26:43.000000000 +0200
++++ etc/rmilter.conf.common	2016-02-20 14:01:44.845778277 +0200
+@@ -13,6 +13,7 @@
+ 	# sockets are separated by ','
+ 	# Default: empty
+ 	#servers = localhost;
++	servers = /var/run/clamav/clamd.ctl;
+ 	# connect_timeout - timeout in miliseconds for connecting to clamav
+ 	# Default: 1s
+ 	connect_timeout = 1s;
+@@ -40,6 +41,15 @@
+ };
+ 
+ spamd {
++        # use rspamd action for greylisting
++        spamd_greylist = yes;
++
++        # use rspamd action for messages
++        spamd_soft_fail = yes;
++
++        # add extended headers for messages
++        extended_spam_headers = yes;
++
+ 	# servers - spamd socket definitions in format:
+ 	# /path/to/file
+ 	# host[:port]
+@@ -96,6 +106,7 @@
+ 	# servers_white - redis servers for whitelisting in format similar to that is used
+ 	# in servers_grey
+ 	# servers_white = redis.example.com:6379;
++	servers_white = localhost;
+ 
+ 	# servers_limits - redis servers used for limits storing, can not be mirrored
+ 	servers_limits = localhost;
+@@ -148,7 +159,7 @@
+ # tempfiles_mode - set permission for temp files
+ # Default: 00600
+ 
+-tempfiles_mode = 00600;
++tempfiles_mode = 00666;
+ 
+ # max_size - maximum size of scanned mail with clamav and dcc
+ # Default: 0 (no limit)
+@@ -224,10 +235,9 @@
+ 
+ greylisting {
+ 	timeout = 300s;
+-	expire = 3d;
++	expire = 30d;
+ 	whitelist = 127.0.0.1,
+-				192.168.1.1,
+-				192.168.2.0/24;
++			10.0.0.0/8;
+ 	awl_enable = yes;
+ 	awl_pool = 10M;
+ 	awl_hits = 10;
+@@ -255,6 +265,8 @@
+     header_canon = relaxed;
+     body_canon = relaxed;
+     sign_alg = sha256;
++    auth_only = no;
++    sign_networks = 10.0.0.0/8;
+ };
+ 
+ 

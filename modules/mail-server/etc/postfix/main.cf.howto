@@ -1,0 +1,40 @@
+biff = no
+myhostname = mail.mydom.com
+mydomain = mydom.com
+myorigin = $mydomain
+mydestination = $mydomain mydom2.com
+mynetworks = 127.0.0.0/8 10.0.0.0/16
+
+#Прописываем где брать алиасы, в том числе и из ldap
+alias_maps = hash:/etc/aliases, ldap:/etc/postfix/ldap-aliases.cf
+alias_database = hash:/etc/aliases
+
+# Доставка локальной почты в почтовые ящики 
+# после окончательной проверки на спамность
+# через dspam
+dspam_destination_recipient_limit = 1
+mailbox_transport=lmtp:unix:shared/dspam.sock
+
+# Для особых случаев виртуальные домены
+# В этом случае имя почтового ящика может не совпадать с именем пользователя в адресе
+# почта для vasya@myvirt.com может быть доставлена petya, это определяется файлом /etc/postfix/virtual
+#virtual_alias_domains = myvirt.com
+#virtual_alias_maps = hash:/etc/postfix/virtual
+
+smtpd_client_restrictions =.
+permit_mynetworks, # наши сети не проверяются дальнейшими правилами
+check_client_access hash:/etc/postfix/access, # ручные правила доступа
+reject_unknown_client, # проверка MX и backresolv
+reject_rbl_client sbl-xbl.spamhaus.org, # черные списки 
+reject_rbl_client cbl.abuseat.org, # включайте/выключайте по своему усмотрению
+reject_rbl_client psbl.surriel.com,
+reject_rbl_client dnsbl-1.uceprotect.net,
+reject_rbl_client t1.dnsbl.net.au,
+reject_rbl_client bl.spamcop.net,
+reject_rbl_client no-nore-funn.moensted.dk,
+permit
+
+smtpd_recipient_restrictions =
+permit_mynetworks,
+reject_unauth_destination
+

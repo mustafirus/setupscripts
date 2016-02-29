@@ -1,0 +1,6 @@
+#!/bin/sh
+exit
+for N in `find . -name '*.conf.ext' ` ; do
+    mv -n $N $N.tmp
+    sed -e '/^ *#/d' -e '/^$/d' $N.tmp >$N
+done

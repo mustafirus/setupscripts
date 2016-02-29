@@ -1,0 +1,37 @@
+biff = no
+myhostname = mail.odoo-ukraine.com
+myorigin = $mydomain
+
+mydestination = odoo-ukraine.com
+mynetworks = 127.0.0.0/8 10.99.0.0/16
+
+recipient_delimiter = +
+
+alias_maps = hash:/etc/aliases
+#, ldap:/etc/postfix/ldap-aliases.cf
+alias_database = hash:/etc/aliases
+
+mailbox_transport = lmtp:unix:private/dovecot-lmtp
+local_recipient_maps =
+
+#virtual_alias_domains = rastaban.com.ua
+#virtual_alias_maps = hash:/etc/postfix/virtual
+
+
+smtpd_client_restrictions = 
+    permit_mynetworks,
+    check_client_access hash:/etc/postfix/access,
+    reject_unknown_client,
+    reject_rbl_client sbl-xbl.spamhaus.org,
+    permit
+    
+smtpd_recipient_restrictions =
+    permit_mynetworks,
+    reject_unverified_recipient
+
+unverified_recipient_reject_code = 550
+
+smtpd_milters = unix:milter/rmilter.sock
+milter_protocol = 6
+milter_mail_macros = i {mail_addr} {client_addr} {client_name} {auth_authen}
+milter_default_action = accept

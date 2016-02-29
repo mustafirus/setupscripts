@@ -1,0 +1,7 @@
+
+
+bind_socket = unix:/var/spool/postfix/milter/rmilter.sock;
+
+mkdir -p /var/spool/postfix/rmilter
+chown _rmilter:postfix /var/spool/postfix/rmilter
+chmod 750 /var/spool/postfix/rmilter

@@ -1,0 +1,12 @@
+--- etc.bak/rmilter.conf.sysvinit	2016-01-21 17:26:43.000000000 +0200
++++ etc/rmilter.conf.sysvinit	2016-02-14 14:25:35.573107848 +0200
+@@ -2,7 +2,8 @@
+ 
+ .include /etc/rmilter.conf.common
+ 
+-bind_socket = unix:/run/rmilter/rmilter.sock;
++#bind_socket = unix:/run/rmilter/rmilter.sock;
++bind_socket = unix:/var/spool/postfix/milter/rmilter.sock;
+ 
+ # pidfile - path to pid file
+ # Default: pidfile = /var/run/rmilter.pid

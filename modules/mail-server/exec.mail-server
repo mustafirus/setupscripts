@@ -1,10 +1,20 @@
 
 
-#Fix rmilter sock access from postfix
-#sed -e 's!^bind_socket.*!bind_socket =  unix:/var/spool/postfix/rmilter/rmilter.sock;!' /etc/rmilter.conf.sysvinit 
+adduser --quiet \
+        --system \
+        --group \
+        --home /var/vmail \
+        --no-create-home \
+        --disabled-login \
+        --gecos "vmail" \
+        vmail
+
 mkdir -p /var/spool/postfix/rmilter
 chown _rmilter:postfix /var/spool/postfix/rmilter
 #chmod 750 /var/spool/postfix/rmilter
+mkdir -p /var/vmail/{attachments,home,public}
+chown -R vmail:vmail /var/vmail
+chmod -R 700         /var/vmail
 
 (
 cd /etc/dkim

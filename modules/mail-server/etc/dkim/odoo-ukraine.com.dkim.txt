@@ -1,1 +1,0 @@
-dkim._domainkey	IN	TXT	( "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8xEcaMH0Wv9G9wGA+DbVV+T9UMGoWFCp02awrJ7sat92vnhAe9Wwm/TemyqEXNlFjaWGdffRACLbo/IfyhUOJKlPHrpzLfsQEbf1uV5Ercv7g1xXa6nvfUL6z8JQ4IbfcWJEhpuG2VQi+38olS6Pw9e4Ldmm/CusLhH/Q/D+l/wIDAQAB" )  ; ----- DKIM key dkim for odoo-ukraine.com

@@ -1,7 +1,14 @@
 
 
-bind_socket = unix:/var/spool/postfix/milter/rmilter.sock;
-
+#Fix rmilter sock access from postfix
+#sed -e 's!^bind_socket.*!bind_socket =  unix:/var/spool/postfix/rmilter/rmilter.sock;!' /etc/rmilter.conf.sysvinit 
 mkdir -p /var/spool/postfix/rmilter
 chown _rmilter:postfix /var/spool/postfix/rmilter
-chmod 750 /var/spool/postfix/rmilter
+#chmod 750 /var/spool/postfix/rmilter
+
+(
+cd /etc/dkim
+for DOM in $MDOMAINS; do
+    ./gen $DOM
+done
+)

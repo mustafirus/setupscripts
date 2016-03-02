@@ -1,10 +1,10 @@
-hosts = dc1.ad.ces.bla,dc2.ad.ces.bla
-base = cn=Users,dc=ad,dc=ces,dc=bla
-dn = cn=ldap,cn=Users,dc=ad,dc=ces,dc=bla
-dnpass = cdvfbg1q
+hosts = dc1.ad.$CNAME.bla,dc2.ad.$CNAME.bla
+base = cn=Users,dc=ad,dc=$CNAME,dc=bla
+dn = cn=ldap,cn=Users,dc=ad,dc=$CNAME,dc=bla
+dnpass = xxxxxx
 
 auth_bind = yes
-auth_bind_userdn = cn=%u,cn=Users,dc=ad,dc=ces,dc=bla
+auth_bind_userdn = cn=%u,cn=Users,dc=ad,dc=$CNAME,dc=bla
 user_attrs = cn=user
 user_filter = (&(objectClass=posixAccount)(cn=%u))
 

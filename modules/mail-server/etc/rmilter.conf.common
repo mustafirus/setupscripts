@@ -150,7 +150,6 @@ redis {
 # Default: bind_socket = unix:/var/tmp/rmilter.sock;
 
 #bind_socket = unix:/run/rmilter/rmilter.sock;
-bind_socket = unix:/var/spool/postfix/rmilter/rmilter.sock;
 
 # tempdir - path to directory that contains temporary files
 # Default: $TMPDIR

@@ -30,14 +30,11 @@ if [ "$CHECKPASSWORD_REPLY_BINARY" = "test" ]; then
     INPUT_FD=0
 fi
 
-# Credentials lookup function. Given a user name it should output 'user:password' if such
+# userdb lookup function. Given a user name it should output 'ok' if such
 # account exists or nothing if it does not. Return non-zero code in case of error.
-credentials_lookup()
+userdb_lookup()
 {
-    local db="$1"
-    local user="$2"
-
-    awk -F ':' -v USER="$user" '($1 == USER) {print}' "$db" 2>>$LOG
+    /etc/dovecot/odoo_svami_checkpw.py $1
 }
 
 # Credentials verification function. Given a user name and password it should output non-empty
@@ -45,18 +42,15 @@ credentials_lookup()
 # or nothing if they are not. Return non-zero code in case of error.
 credentials_verify()
 {
-    local db="$1"
-    local user="$2"
-    local pass="$3"
-
-    awk -F ':' -v USER="$user" -v PASS="$pass" '($1 == USER && $2 == PASS) {print}' "$db" 2>>$LOG
+    /etc/dovecot/odoo_svami_checkpw.py $1 $2
 }
 
 # Just a simple logging helper.
 log_result()
 {
-    echo "$*; Input: $USER:$PASS; Home: $HOME; Reply binary: $CHECKPASSWORD_REPLY_BINARY" >>$LOG
+    echo "$*; Input: $USER:$PASS; Home: $HOME; Reply binary: $CHECKPASSWORD_REPLY_BINARY" 1>&2 #$LOG
 }
+log_result "AUTHORIZED: $AUTHORIZED CREDENTIALS_LOOKUP: $CREDENTIALS_LOOKUP"
 
 # Read input data. It is available from $INPUT_FD as "${USER}\0${PASS}\0".
 # Password may be empty if not available (i.e. if doing credentials lookup).
@@ -67,20 +61,20 @@ read -d $'\0' -r -u $INPUT_FD PASS
 # So let's convert login user name to lowercase and tell Dovecot that 'user' and 'home' 
 # (which overrides 'mail_home' global parameter) values should be updated.
 # Of course, conversion to lowercase may be done in Dovecot configuration as well.
-export USER="`echo \"$USER\" | tr 'A-Z' 'a-z'`"
-mail_name="`echo \"$USER\" | awk -F '@' '{ print $1 }'`"
-domain_name="`echo \"$USER\" | awk -F '@' '{ print $2 }'`"
-export HOME="/var/qmail/mailnames/$domain_name/$mail_name/"
+#export USER="`echo \"$USER\" | tr 'A-Z' 'a-z'`"
+#mail_name="`echo \"$USER\" | awk -F '@' '{ print $1 }'`"
+#domain_name="`echo \"$USER\" | awk -F '@' '{ print $2 }'`"
+#export HOME="/var/qmail/mailnames/$domain_name/$mail_name/"
 
 # CREDENTIALS_LOOKUP=1 environment is set when doing non-plaintext authentication.
-if [ "$CREDENTIALS_LOOKUP" = 1 ]; then
-    action=credentials_lookup
+if [ "$AUTHORIZED" = 1 ]; then
+    action=userdb_lookup
 else
     action=credentials_verify
 fi
 
 # Perform credentials lookup/verification.
-lookup_result=`$action "/etc/dovecot/users" "$USER" "$PASS"` || {
+lookup_result=`$action "$USER" "$PASS"` || {
     # If it failed, consider it an internal temporary error.
     # This usually happens due to permission problems.
     log_result "internal error (ran as `id`)"
@@ -99,19 +93,17 @@ if [ -n "$lookup_result" ]; then
     #   http://wiki2.dovecot.org/PasswordDatabase/ExtraFields
     #   http://wiki2.dovecot.org/UserDatabase/ExtraFields
     #   http://wiki2.dovecot.org/VirtualUsers
-    export userdb_uid=popuser
-    export userdb_gid=popuser
-    export EXTRA="userdb_uid userdb_gid $EXTRA"
+#    export userdb_uid=popuser
+#    export userdb_gid=popuser
+#    export EXTRA="userdb_uid userdb_gid $EXTRA"
 
     if [ "$CREDENTIALS_LOOKUP" = 1 ]; then
 	# If this is a credentials lookup, return password together with its scheme.
 	# The password scheme that Dovecot wants is available in SCHEME environment variable
 	# (e.g. SCHEME=CRAM-MD5), however 'PLAIN' scheme can be converted to anything internally
 	# by Dovecot, so we'll just return 'PLAIN' password.
-	found_password="`echo \"$lookup_result\" | awk -F ':' '{ print $2 }'`"
-	export password="{PLAIN}$found_password"
-	export EXTRA="password $EXTRA"
-	log_result "credentials lookup result: '$password' [SCHEME='$SCHEME', EXTRA='$EXTRA']"
+	log_result "credentials lookup not supported"
+	exit $ERR_PERMFAIL
     else
 	log_result "lookup result: '$lookup_result'"
     fi
@@ -120,7 +112,7 @@ if [ -n "$lookup_result" ]; then
     exec $CHECKPASSWORD_REPLY_BINARY
 else
     # If matching credentials were not found, return proper error code depending on lookup mode.
-    if [ "$AUTHORIZED" = 1 -a "$CREDENTIALS_LOOKUP" = 1 ]; then
+    if [ "$AUTHORIZED" = 1 ]; then
 	log_result "lookup failed (user not found)"
 	exit $ERR_NOUSER
     else

@@ -34,6 +34,14 @@ IFS=. read HOSTNAME CPART CNAME BLA < <(echo $FQDN)
 
 [ "$CPART" = "ovh" ] && PROVIDER_NAMESERVER='213.186.33.99'
 
+[ -r ./$HOSTNAME.conf ] || exit 1
+
+if [ -x /usr/bin/mcedit ]; then
+    /usr/bin/mcedit ./$HOSTNAME.conf
+else
+    /usr/bin/nano ./$HOSTNAME.conf
+fi
+
 if [ -z $DEBUGMOD ] ; then
 echo "Check setup data"
 echo "hostname: $FQDN"
@@ -55,13 +63,7 @@ EOF
 
 export FQDN HOSTNAME CNET CSUB CPART CNAME SOFT ADMINEMAIL PROVIDER_NAMESERVER
 
-[ -r ./$HOSTNAME.conf ] || exit 1
 
-if [ -x /usr/bin/mcedit ]; then
-    /usr/bin/mcedit ./$HOSTNAME.conf
-else
-    /usr/bin/nano ./$HOSTNAME.conf
-fi
 
 MODULES_ALL=
 PACKAGES_ALL=

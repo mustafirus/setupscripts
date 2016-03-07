@@ -1,7 +1,6 @@
 
 
 adduser --quiet \
-        --group \
         --home /var/vmail \
         --no-create-home \
         --disabled-login \

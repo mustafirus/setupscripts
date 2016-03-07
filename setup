@@ -34,12 +34,12 @@ IFS=. read HOSTNAME CPART CNAME BLA < <(echo $FQDN)
 
 [ "$CPART" = "ovh" ] && PROVIDER_NAMESERVER='213.186.33.99'
 
-[ -r ./$HOSTNAME.conf ] || exit 1
+[ -r ~/$HOSTNAME.conf ] || ( [ -r ./$HOSTNAME.conf  ] && cp ./$HOSTNAME.conf ~/ ) || touch ~/$HOSTNAME.conf
 
 if [ -x /usr/bin/mcedit ]; then
-    /usr/bin/mcedit ./$HOSTNAME.conf
+    /usr/bin/mcedit ~/$HOSTNAME.conf
 else
-    /usr/bin/nano ./$HOSTNAME.conf
+    /usr/bin/nano ~/$HOSTNAME.conf
 fi
 
 if [ -z $DEBUGMOD ] ; then

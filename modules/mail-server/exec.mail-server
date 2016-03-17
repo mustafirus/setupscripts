@@ -17,3 +17,4 @@ chmod -R 700         /var/vmail
 
 /etc/dkim/gen $MDOMAINS
 (cd /usr/share/dovecot; ./mkcert.sh)
+(cd /etc/dovecot; cp -a dovecot-ldap.conf.$AUTHTYPE dovecot-ldap.conf.ext)

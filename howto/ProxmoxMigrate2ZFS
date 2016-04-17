@@ -1,0 +1,26 @@
+1. Break mirror
+#mdadm -f /dev/md1 /dev/sda1
+#mdadm -r /dev/md1 /dev/sda1
+2. repartition disk
+for ex. 
+gdisk -l /dev/sda
+Partitions will be aligned on 8-sector boundaries(4096 block)
+1              34            2047   1007.0 KiB  EF02  Boot part
+2            2048      3907012751   1.8 TiB     BF01  Solaris /usr & Mac ZFS
+9      3907012752      3907029134   8.0 MiB     BF07  Solaris Reserved 1
+
+part1 EF02 need for grub
+part2 BF01 partitioned for allmost whole disk - your main part for zfs
+part3 - 16384 logical(512) sectors BF07 reserved part
+   they say that zfs look for it to know that it use whole disk
+   Compatibility with some hard/soft raids
+   proxmox do it if u install to zfs by instalator
+   i dont khow why
+
+3. Make zpool with mirror of sda2 and sparse file 
+#truncate -s 2T /tmp/sparsefile
+#zpool create -o ashift=12 tank mirror sda /tmp/sparsefile
+ashift - says to use 4096 alighnment on vdev
+
+4. Create new layout for system root,swap,vzdata...
+zfs

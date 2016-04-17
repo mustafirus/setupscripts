@@ -49,3 +49,15 @@ comment old root and swap records, add new line below
 6. Install grub
 zpool export tank
 
+
+
+at end
+vgchange -an
+vgremove pve
+pvremove /dev/md1
+mdadm -S /dev/md1
+
+clone parttable to sdb
+#sgdisk -R /dev/sdb /dev/sda
+#sgdisk -G /dev/sdb
+zpool replace -f tank /tmp/sparsef1 ata-WDC_WD2000FYYZ-01UL1B1_WD-WCC1P0797331-part2

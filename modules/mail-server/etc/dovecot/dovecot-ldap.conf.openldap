@@ -1,0 +1,10 @@
+hosts = bdc.$CPART.$CNAME.bla,pdc.$CNAME.bla
+base = ou=people,dc=$CNAME,dc=bla
+
+auth_bind = yes
+auth_bind_userdn = uid=%u,ou=people,dc=$CNAME,dc=bla
+user_attrs =
+user_filter = (&(objectClass=posixAccount)(uid=%u))
+
+iterate_attrs = uid=user
+iterate_filter = (objectClass=posixAccount)

@@ -1,0 +1,12 @@
+hosts = dc1.ad.$CNAME.bla,dc2.ad.$CNAME.bla
+base = cn=Users,dc=ad,dc=$CNAME,dc=bla
+dn = cn=ldap,cn=Users,dc=ad,dc=$CNAME,dc=bla
+dnpass = xxxxxx
+
+auth_bind = yes
+auth_bind_userdn = cn=%u,cn=Users,dc=ad,dc=$CNAME,dc=bla
+user_attrs = cn=user
+user_filter = (&(objectClass=posixAccount)(cn=%u))
+
+iterate_attrs = cn=user
+iterate_filter = (objectClass=posixAccount)

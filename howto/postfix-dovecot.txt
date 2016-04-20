@@ -1,0 +1,527 @@
+Установка postfix+dovecot на Debian 6.0 (squeeze)
+postfix+dovecot+clamav+antispam+ldap+sieve+shared_foolders
+
+Прочитал недавно статью Идеальный корпоративный почтовый клиент на хабре
+и возрадовался, а прочитав кое-какие каменты — всплакнул.
+Возрадовался от того что есть люди как и я считающие что на мелкософте свет клином не сошелся,
+а всплакнул потому, что некоторые мелкофаны пытаются ввести в заблуждение людей своими высказываниями.
+Мол, дескать, где СПО там костыли, глючные самописные скриптики и танцы с бубном.
+Это все неправда.
+
+Предполагаем что есть единая лдап база пользователей
+
+С почтовыми серверами имею дело давно(лет 20). Перепробовал много разных, в т.ч. и ексчендж.
+Что мне нужно от почтовика — гибкость — я его ставлю в одной позе, но когда появляются новые требования у меня или начальства сервак должен стать в ту позу которую надо.
+И вообще — я считаю что софт должен прогибаться под меня а не я под него.
+Простота рещения проблем — если софт ведет не так как я расчитываю — должна быть запись в логе 
+
+Хочу представить вниманию «Идеальный корпоративный почтовый сервер»
+Итак чего бы хотелось
+1. Стабильности — чтоб работало железобетонно и кушать не просило.
+2. Совместимость с «Идеальным корпоративным почтовым клиентом»… шутка… и коню понятно, что SMTP,IMAP,POP3 и есть совместимость.
+3. Антивирус
+4. Качественный антиспам с минимальными телодвижениями для обучения(перекладывание из одной папки в другую вместо пересылки на спецадрес для переучивания).
+5. Аутентификация из LDAP
+6. Общие папки
+7. Сортировка/фильтрация почты на стороне сервера.
+
+Итак, безо всякого поиска в интернете берем Debian, славящийся своей стабильностью, Dovecot по причинам описаным в вышеназванной статье, Postfix по религиозным соображениям а так же Dspam, Clamav и прочую нечисть.
+Dspam выбрал по двум причинам — написан на С/С++(меньше грузит железо) и самообучаемостью(так было написано в рекламном буклете).
+Поклонников других продуктов прошу меня не бить — я описываю свое решение, которое и ставлю клиентам.
+
+Прошу заметить, все что я опишу я сделал 1 раз, и завернул в «коробку», установка в продакшн требует минимальной подстройки под окружение(почтовый домен, прописать ldap-сервер, и т.д.)
+
+Итак начнем.
+Что нужно: 
+Кое-какие познания в работе почтовых серверов.
+Иметь домен и знать что такое MX.
+Знать параметры внутренней сети.
+
+Все команды в консоли выполняются от root'a, следовательно используйте или su или sudo.
+
+Берем минимальный Debian Squeeeze.
+В файл /etc/apt/sources.list добавляем репозиторий
+
+deb backports.debian.org/debian-backports squeeze-backports main
+
+в нем свежие Dovecot, Dspam
+
+обновляем репы
+
+apt-get update
+
+Устанавливаем пакеты 
+#apt-get install postfix postgrey clamav-daemon mysql-server
+
+mysql-server нужен dspam'у, при установке попросит создать пароль для root'а. Пароль желательно запомнить — он потом понадобится. Но если забыли — не беда — dpkg-reconfigure mysql-server поможет.
+
+#apt-get install nslcd nscd
+nslcd nscd — LDAP авторизация.
+При установке попросит ввести параметры ldap-сервера, это может быть Openldap или ActiveDirectory(во втором случае можете дальше не читать — ставьте ексченж и страдайте дальше) и настройки nsswitch
+— выбираем passwd,group,shadow 
+
+Для тех, у кого нет LDAP'а, и тех, кто не знает что это такое — этот шаг пропускаем.
+
+Остановлюсь поподробннее на том, почему выбрал в качестве авторизации именно PAM.
+Если есть LDAP, логично предположить что туда заведены все сотрудники с их логин-паролями, и оттуда черпают информацию все кому не лень(в том числе и самба), 
+а следовательно там есть то, что нужно PAM'у для авторизации пользователя(а именно posixAccount)
+А мы(т.е. Dovecot), в свою очередь, используем PAM для авторизации.
+Это дает гибкость в подходе(нет лдапа — не ставим/удаляем nslcd nscd или просто отключам ldap в nsswitch.conf) и простоту решения(меньше строк править).
+
+Поехали дальше.
+
+#apt-get -t squeeze-backports install dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd dovecot-antispam dovecot-sieve dovecot-managesieved dspam libdspam7-drv-mysql
+
+При установке libdspam7-drv-mysql попросит 
+* выбрать unix-socket или TCP — выбираем unix-socket
+* логин пароль админа mysql — даем то что задавали минуту назад.
+* логин пароль базы dspam — оставляем пустым, он сам создаст загадочный пароль.
+* предлагает перезаписать конфиг — жмем «install the package maintainer's version» 
+
+Установка закончена, приступаем к курению конфигурению.
+
+Начнем с простого — postfix
+все содержимое файла /etc/postfix/main.cf заменяем на нижеследующее(комментарии лучше убрать)
+
+biff = no
+# наш MX, адрес который смотрит во внешний мир
+myhostname = mail.mydom.com
+# наш основной почтовый домен
+mydomain = mydom.com
+myorigin = $mydomain
+# все наши почтовые домены основной и дополнительные
+# в случае нескольких доменов почта для user@mydom.com и user@mydom2.com достляются пользователю user.
+mydestination = $mydomain mydom2.com
+# параметры внутренней сети, почта отправленная с этих адресов считается 
+# отправленой сотрудниками 
+mynetworks = 127.0.0.0/8 10.0.0.0/16
+
+#Прописываем где брать алиасы, в том числе и из ldap
+alias_maps = hash:/etc/aliases, ldap:/etc/postfix/ldap-aliases.cf
+alias_database = hash:/etc/aliases
+
+# Доставка локальной почты в почтовые ящики 
+# после окончательной проверки на спамность
+# через dspam
+dspam_destination_recipient_limit = 1
+mailbox_transport=lmtp:unix:shared/dspam.sock
+
+# Для особых случаев виртуальные домены
+# В этом случае имя почтового ящика может не совпадать с именем пользователя в адресе
+# почта для vasya@myvirt.com может быть доставлена petya, это определяется файлом /etc/postfix/virtual
+#virtual_alias_domains = myvirt.com
+#virtual_alias_maps = hash:/etc/postfix/virtual
+
+smtpd_client_restrictions =.
+permit_mynetworks, # наши сети не проверяются дальнейшими правилами
+check_client_access hash:/etc/postfix/access, # ручные правила доступа
+reject_unknown_client, # проверка MX и backresolv
+reject_rbl_client sbl-xbl.spamhaus.org, # черные списки 
+reject_rbl_client cbl.abuseat.org, # включайте/выключайте по своему усмотрению
+reject_rbl_client psbl.surriel.com,
+reject_rbl_client dnsbl-1.uceprotect.net,
+reject_rbl_client t1.dnsbl.net.au,
+reject_rbl_client bl.spamcop.net,
+reject_rbl_client no-nore-funn.moensted.dk,
+permit # если пробились через все препоны postfix так и быть поработает
+…
+smtpd_recipient_restrictions =
+permit_mynetworks, # наши сети не проверяются дальнейшими правилами
+reject_unauth_destination, # отвергаем кривых адресатов 
+check_policy_service inet:127.0.0.1:10023 # а вот тут проверка на серость, т.н. грейлистинг.
+
+В файле /etc/postfix/ldap-aliases.cf прописываем настройки доступа к LDAP
+Например:
+server_host = localhost
+search_base = ou=aliases,dc=nt,dc=bla
+scope = one
+query_filter = (cn=%s)
+result_attribute = rfc822MailMember
+
+Это минимальный конфиг и вы можете достраивать как хотите, благо информации полно.
+Гибкость и секурность postfix'а общепризнана, если уже микрософт рекомендует ставить его перед ексченджем дабы его обезопасить, то что уже говорить.
+Но можно и не заморачиваться, это вполне подойдет для начала.
+К тому времени как понадобится большая секюрность, Вы уже будете знать что делать.
+
+Выполняем команды… думаю тут объяснять нечего
+mkdir /var/spool/postfix/shared
+chown postfix:postfix /var/spool/postfix/shared
+chmod 2770 /var/spool/postfix/shared
+adduser dspam postfix
+newaliases
+touch /etc/postfix/access
+postmap /etc/postfix/access
+
+Следующий шаг Clamav
+Запускаем кофигуратор clamav'а
+#dpkg-reconfigure clamav-base
+
+Все значения поумолчанию, кроме
+Socket type: TCP
+Port: 3310
+IP: 127.0.0.1
+Mail scaning:yes
+
+Далее DSPAM
+Правим строку в файле /etc/default/dspam
+START=yes
+
+Переходим к файлу /etc/dspam/dspam.conf
+
+Мы будем хранить токены в mysql как рекомендуют разрабы
+StorageDriver /usr/lib/dspam/libmysql_drv.so
+
+закоментируем все строки с TrustedDeliveryAgent — мы ими пользоваться не будем
+#TrustedDeliveryAgent…
+
+Просканированную почту будем отправлять в dovecot по lmtp
+DeliveryHost /var/run/dovecot/lmtp
+DeliveryProto LMTP
+DeliveryIdent localhost
+
+Всю почту, нормальную и спам, мы отправляем довекоту, он сам разложит по нужным папкам
+Preference «spamAction=deliver»<------><------># { quarantine | tag | deliver } -> default:quarantine
+Так как мы не будем пересылать неправильно определенные — сигнатуры храним в заголовке письма
+Preference «signatureLocation=header»<># { message | headers } -> default:message
+
+Запрещаем пользователям менять эти настройки
+#AllowOverride signatureLocation
+#AllowOverride spamAction
+
+Так как все сообщения остаются на сервере(IMAP) и могут быть даны DSPAM'у в оригинальном(небодифицированом) виде
+устанавливаем это параметр
+TrainPristine on
+
+Рассказываем где находится антивирус.
+ClamAVPort 3310
+ClamAVHost 127.0.0.1
+Если найден вирус отвергаем сообщение с оповещением отправителя
+ClamAVResponse> reject
+
+Тепер настраиваем прием почты от postfix'а
+Используем стандартный LMTP сервер работающий через unix сокет
+ServerMode standard
+ServerParameters "--deliver=innocent,spam"
+ServerIdent «localhost.localdomain»
+ServerDomainSocketPath "/var/spool/postfix/shared/dspam.sock"
+
+Убираем домен получателя, так как у нас почтовые ящики не зависят от доменов
+Почта на адреса user@mydomen.com и user@mydomen.net попадает в почтовый ящик user
+Соответственно и тренировка должна быть для пользователя независимо от домена
+StripRcptDomain on
+
+Можно временно включить параметры, что б посмотреть как работает DSPAM
+Debug *
+DebugOpt process spam fp
+
+Переходим к конфигурации dovecot'а
+Dovecot начиная с версии 2.0 имеет новый формат конфиг файлов устанавливаемых по умолчанию.
+В директории /etc/dovecot/conf.d есть много конфиг файлов в которых параметры сгруппированы по логическим группам, и в которых все параметры хорошо задокументированы
+Все эти файлы инклудятся из главного конфиг файла /etc/dovecot/dovecot.conf
+Если вам это кажеться утомиттельным лазить по груде файлов вы можете софрмировать один файл с помощью команды
+#doveconf -n > dovecot.conf.new 
+и все настройки делать в нем
+
+Если вы чтото изменили и забыли что именно, оригинальные конфиг файлы можно найти в директории /usr/share/dovecot
+
+для начала создаем директорий для почты и нарезаем права, я выбрал /var/imap.
+Можно конечно и в домашних директориях пользователя делать как указано в многочисленных примерах, но 
+1. У меня система на которую пользователи не заходят логином, а авторизация довекота логином не является, таким образом автосоздание домашних директориев с помощью PAM'а не работает
+2. Не охота играться с правами на юзерских директориях.
+3. Хочется всю почту иметь в одном месте, для простоты администрирования на уровне файловой системы(бэкап, миграция и пр.)
+
+mkdir /var/imap
+chown root:root /var/imap
+chmod 777 /var/imap
+
+Прошу заметить, что спец. атрибуты guid, stiky ставить не надо — это может вызвать конфликты.
+
+Итак приступим, как и раньше, приведенные прараметры находим и правим.
+
+10-auth.conf
+Так как по LMTP получатель всегда в формате user@domain, а у нас авторизация по имени пользователя, устанавливаем следующий параметр.
+auth_username_format = %Ln
+
+===================================
+10-mail.conf
+===================================
+Местонахождение почтовых баз и формат хранения
+mail_location = mdbox:/var/imap/%u
+Для каждого конкретного пользователя это может быть переопределено, но я не вижу смысла это делать.
+
+А тепер пару слов про форматы хранения.
+Dovecot поддерживает 3 формата
+1. dbox, в двух вариантах
+sdbox — один файл на каждое письмо
+mdbox — один файл на несколько писем
+Это родной формат довекота, не поддерживаемый больше никем, если вам нужен доступ к базе мимо сервера — вам это не подходит.
+В противном случае это лучшее решение.
+2. mbox — стандартный юних мэйлбокс, поддерживается всеми, даже почтовыми клиентами, один файл на все письма.
+3. Maildir — широко распространен, один файл на каждое письмо.
+
+Так как мы не хотим мимо довекота что-то делать выбираем родной формат.
+Есть еще нюансы:
+1. В случае «один файл на все письма» — новое письмо дописывается в конец, а удаленные физически не удаляются а помечаются удаленными.
+Таким образом имеет место проблема бесконечного роста файла, с которой довекот успешно борется путем сжатия файла, но и тут есть сложности.
+При больших файлах процесс сжатия может продолжаться длительное время, в которое приостанавливается доступ к почте.
+При сбоях железа во время сжатия возможна поломка базы с потерей всех(или части) писем.
+2. В случае «один файл на каждое письмо» вышеприведенных проблем нет, это более надежно.
+Но при большом объеме мелких писем — нерационально используется дисковое пространство, без специальных действий с файловой системой.
+
+В силу этих причин я выбираю mdbox, как оптимальное решение, несмотря на то что код обслуживающий этот формат сложнее и не доконца вылизан(по словам разраба).
+По моему опыту — все работает стабильно и без сбоев.
+
+Продолжим.
+
+Определяем нэймспейсы(namespace) — это расширение IMAP которое позволяет определять несколько мест и форматов хранения почтовых ящиков.
+Нам они нужны для определения общих почтовых папок.
+
+Личные папки
+namespace {
+  type = private
+  separator = /
+  prefix =.
+  #location =
+  inbox = yes
+  list = yes
+  subscriptions = yes
+}
+
+namespace {
+  type = shared
+  separator = /
+  prefix = shared/%%u/
+  location = mdbox:/var/imap/%%u
+  list = yes
+  subscriptions = no
+}
+
+namespace {
+    type = public
+    separator = /
+    prefix = Public/
+    location = mdbox:/var/imap/public
+	list = yes
+    subscriptions = no
+}
+
+Не буду вдаваться в подробности что это и с чем его едят — есть много ресурсов описывающих это, скажу только
+1. В шареных папках права на доступ дают сами пользователи.
+2. В публичных права распределяет админ.
+3. В случае dbox пока не даш права на INBOX — другие папки не видны, с Maildir'ом такого бага нет, надеюсь поправят в следующих версиях.
+4. Чтоб видеть чужую почту нужно иметь доступ на уровне файловой системы 
+
+Этот параметр позволяет прятать INBOX и показывать входящие прямо в папке с именем пользователя
+Но это еще баговое, так что для надежности лучше поставить yes
+mail_shared_explicit_inbox = no
+
+Глобальный список плугинов, подключаем acl, чтоб можно было раздавать права на папки, без него права доступа определяются только файловой системой.
+mail_plugins = acl
+
+===================================
+15-lda.conf
+===================================
+Чтоб можно было адресовать почту в конкретный почтовый ящик пользователя, например user+Sent@example.com
+recipient_delimiter = +
+Автосоздание и автоподписка почтовых ящиков при доставке почты.
+lda_mailbox_autocreate = yes
+lda_mailbox_autosubscribe = yes
+
+===================================
+20-imap.conf
+===================================
+Добавляем плугины
+mail_plugins = $mail_plugins imap_acl antispam
+Если собираетесь пользоваться Тандербирдом надо поставить, чтобы корректно работало с папками, содержащими папки и письма.
+imap_client_workarounds = tb-extra-mailbox-sep
+
+===================================
+20-lmtp.conf
+===================================
+lmtp_save_to_detail_mailbox = yes
+mail_plugins = $mail_plugins sieve
+
+===================================
+90-acl.conf
+===================================
+В файле /etc/dovecot/global-acls админ может переопределять права заданные пользователями на шаренные папки
+plugin {
+  acl = vfile
+  ИЛИ
+  acl = vfile:/etc/dovecot/global-acls:cache_secs=300
+}
+
+Это права для публичных папок — задаются только админом
+plugin {
+  acl_shared_dict = file:/var/imap/shared-mailboxes
+}
+
+===================================
+90-plugin.conf
+===================================
+Опеределяем параметры антиспам плугина
+plugin {
+    #setting_name = value
+
+    antispam_backend = dspam
+    antispam_signature = X-DSPAM-Signature
+    antispam_signature_missing = move
+    antispam_spam = Spam;Junk
+    antispam_trash = trash;Trash;Deleted Items; Deleted Messages
+    antispam_unsure = Unsure
+}
+
+Для чего это нужно опишу ниже
+
+===================================
+90-sieve.conf
+===================================
+Параметры для фильтрации почты
+  sieve_before = /etc/dovecot/sieve/before
+  sieve_after = /etc/dovecot/sieve/after
+  recipient_delimiter = +
+
+
+Создаем директории для скриптов и скрипты
+mkdir -p /etc/dovecot/sieve/{before,after}
+cat > /etc/dovecot/sieve/before/spam-folder1.sieve <<EOF
+require [«regex», «fileinto», «imap4flags»];
+
+# Catch mail tagged as Spam, except Spam retrained and delivered to the mailbox
+if allof (header :regex «X-DSPAM-Result» "^(Spam|Virus|Bl[ao]cklisted)$",
+not header :contains «X-DSPAM-Reclassified» «Innocent») {
+
+# Mark as read
+addflag "\\Seen";
+# Mark as Junk
+addflag «Junk»;
+
+# Move into the Junk folder
+fileinto «Junk»;
+
+# Stop processing here
+stop;
+}
+EOF
+sievec /etc/dovecot/sieve/before/
+
+Как это работает.
+DSPAM маркирует почту как нормальную или спам и отправляет Dovecot'у по LMTP
+Dovecot зовет скрипт который спам отправляет в папку JUNK и маркирует его как прочитанное и как спам.
+Если DSPAM не распознал спам, вы просто перемещаете из входящих в папку Spam или Junk при этом происходит тренировка DSPAM'а.
+Я обычно настраиваю Thunderbird так чтоб при маркировке как спам он сразу отправлял письмо в папку спам в 1 клик. 
+Если DSPAM нужное опознал как спам просто перемещаете обратно во входящие, при этом происходит ретрейн DSPAM'а.
+
+Вкупе с этим имеем мощный механизм сортировки на стороне сервера, который можно использовать в 2-х вариантах:
+Глобальные скрипты лежащие в etc/dovecot/sieve/
+Юзерские скрипты — каждый пользователь может писать(просить админа писать) свои скрипты, которые потом передаются на сервер по протоколу Managesieve.
+Не забывайте компилить глобальные скрипты после изменения, с помощью команды sievec
+sievec /etc/dovecot/sieve/before/
+sievec /etc/dovecot/sieve/after/
+
+Про пользовательские скрипты можно не беспокоиться — Dovecot их компилит сам.
+
+если надо перегенерить сертификаты для dovecot'а, например при смене DNS имени.
+rm /etc/ssl/certs/dovecot.pem /etc/ssl/private/dovecot.pem
+dpkg-reconfigure dovecot-common
+
+Тепер переходим к настройке incron.
+Сначала поясню зачем он нужен.
+Дело в том, что довекот при созданнии почтового директория присваивает ему права 700.
+В обычных случаях это нормально, но у нас особые потребности — общие папки.
+Для того чтоб довекот мог показывать почту из чужих папок ему кроме ACL надо разрешения на уровне файловой системы.
+Конечно это можно сделать и руками, но я ленив.
+Кроме того, таки нужны домашие директории для каждого пользователя.
+Автосоздание с помощью пама в данном случае не работает, поскольку авторизация довекота в паме не является логином.
+Именно для таких целей и существует incron — демон работающий аналогично обычному крону, но срабатывающий не по времени, а по файловым событиям.
+
+apt-get install incron
+cat > /etc/incron.d/maildir <<EOF
+/var/imap IN_CREATE /usr/local/bin/mkdirs.dovecot $#
+EOF
+
+cat > /usr/local/bin/mkdirs.dovecot <<EOF
+#!/bin/sh
+[ -z $1 ] && exit
+gid=`id -g $1 2> /dev/null` || exit
+
+chmod -R g=rwX /var/imap/$1
+
+if [! -d /home/$1 ]; then
+cp -a /etc/skel /home/$1
+chown -R $1:$gid /home/$1
+chmod -R a=,u=rwX /home/$1
+fi
+
+EOF
+
+Что это делает
+При создании пользовательского ящика дает права на группу и создает хоумдиректори если его нет.
+
+И последняя, бонусная плюшка — вебинтерфейс к DSPAM'у
+apt-get install apache2 apache2-suexec
+apt-get -t squeeze-backports install dspam-webfrontend
+
+Конфиг файл для апача 
+<VirtualHost *:80>
+ServerAdmin webmaster@localhost
+DocumentRoot /var/www/dspam
+SuexecUserGroup dspam dspam
+
+Alias /usr/share/dspam /usr/share/dspam/
+
+<Directory />
+Options FollowSymLinks
+AllowOverride None
+
+<Directory /var/www/dspam>
+Addhandler cgi-script .cgi
+DirectoryIndex dspam.cgi
+Options +ExecCGI -Indexes
+AllowOverride None
+
+Order deny,allow
+Deny from all
+Allow from 127.0.0.0/255.0.0.0 ::1/128 10.0.0.0/8
+
+AuthType Basic
+AuthName «DSPAM Control Center»
+AuthBasicProvider ldap
+AuthLDAPURL ldap://pdc.nt.bla:389/ou=people,dc=nt,dc=bla?uid
+Require valid-user
+
+
+ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+
+<Directory "/usr/lib/cgi-bin">
+AllowOverride None
+Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+Order allow,deny
+Allow from all
+
+
+<Directory /usr/share/dspam/>
+Options -Indexes
+AllowOverride None
+
+
+ErrorLog ${APACHE_LOG_DIR}/error.log
+
+# Possible values include: debug, info, notice, warn, error, crit,
+# alert, emerg.
+LogLevel warn
+
+CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+
+
+К паму прикрутить авторизацию не удалось так что авторизуемся у лдапа
+
+a2enmod suexec
+a2enmod ldap
+a2enmod authnz_ldap
+
+В файле /etc/dspam/admins пишем список логинов которым доступна админпанель в dspam'е
+
+Перегружаем систему дабы не морочиться с перезапуском обдельных сервисов, если это нельзя делать — перезапускаем демоны.
+

@@ -1,0 +1,63 @@
+1. Break mirror
+#mdadm -f /dev/md1 /dev/sda1
+#mdadm -r /dev/md1 /dev/sda1
+2. repartition disk
+for ex. 
+gdisk -l /dev/sda
+Partitions will be aligned on 8-sector boundaries(4096 block)
+1              34            2047   1007.0 KiB  EF02  Boot part
+2            2048      3907012751   1.8 TiB     BF01  Solaris /usr & Mac ZFS
+9      3907012752      3907029134   8.0 MiB     BF07  Solaris Reserved 1
+
+part1 EF02 need for grub
+part2 BF01 partitioned for allmost whole disk - your main part for zfs
+part3 - 16384 logical(512) sectors BF07 reserved part
+   they say that zfs look for it to know that it use whole disk
+   Compatibility with some hard/soft raids
+   proxmox do it if u install to zfs by instalator
+   i dont khow why
+
+3. Make zpool with degraded mirror of sda2 and sparse file 
+#truncate -s 2T /tmp/sparsefile
+#zpool create -o ashift=12 tank mirror sda /tmp/sparsefile
+ashift - says to use 4096 alighnment on vdev
+#zpool offline tank /tmp/sparsefile
+#rm /tmp/sparsefile
+
+4. Create new root 
+zfs create -p tank/host/root
+rsync -vaxHAX --del /    /tank/host/root
+
+5. Create swap device 4G
+https://github.com/zfsonlinux/pkg-zfs/wiki/HOWTO-use-a-zvol-as-a-swap-device
+#zfs create -V 4G -b 4K tank/swap
+#zfs set com.sun:auto-snapshot=false tank/swap
+#zfs set sync=always tank/swap
+#mkswap -f /dev/tank/swap
+
+6. Chroot to new env
+#cd /tank/host/root
+#mount -B /dev dev
+#mount -B /proc proc
+#mount -B /sys sys
+#chroot .
+
+6. Update the /etc/fstab file.
+comment old root and swap records, add new line below
+/dev/tank/swap  none  swap  defaults  0  0
+
+6. Install grub
+zpool export tank
+
+
+
+at end
+vgchange -an
+vgremove pve
+pvremove /dev/md1
+mdadm -S /dev/md1
+
+clone parttable to sdb
+#sgdisk -R /dev/sdb /dev/sda
+#sgdisk -G /dev/sdb
+zpool replace -f tank /tmp/sparsef1 ata-WDC_WD2000FYYZ-01UL1B1_WD-WCC1P0797331-part2

@@ -1,14 +1,20 @@
     static ip
 	proxmox -> vm -> DNS
-	    hostname: dc1
+	    hostname: files
 	    DNS domain: ad.$CNAME.bla
-	    DNS server: 10.$CNET.$CSUB.bla
+	    DNS server: 10.$CNET.$CSUB.1
 
 echo deb http://deb8dev.nt.bla/ jessie-backports main > /etc/apt/sources.list.d/mybackports.list
 apt-get update
 
 
 
-apt-get install samba winbind
+apt-get install samba winbind libnss-winbind
 
 make smb.conf
+# /etc/nsswitch.conf
+
+passwd:         compat winbind
+group:          compat winbind
+
+net ads join -U administrator

@@ -1,2 +1,4 @@
 1. process_file - copy .cp files 
    switch ${file##*.}
+2. pm1 - ifrename, mdadm
+3. ap openvpn sysctl.conf net.ipv4.ip_forward=1

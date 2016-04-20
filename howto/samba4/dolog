@@ -25,6 +25,8 @@ Suggested packages:
 
 INSTALL
 
+apt-get clean
+Backup VM
 remove /etc/samba/smb.conf
 samba-tool domain provision --use-rfc2307 --interactive
 
@@ -40,6 +42,7 @@ to dbdir - pdc
 change in pdc/smb.conf
 passdb backend = ldapsam:ldap://10.99.2.6 (ip - not dns name)
 
+apt-get clean
 backup VM
 
 check lam for correct (all have SID, all have SAMBA Extentions, group Domain Users fill with users)

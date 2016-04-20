@@ -1,0 +1,4 @@
+#!/bin/sh
+BASEDIR=/mnt/data/samba
+find $BASEDIR/homes/*/.recycler/. $BASEDIR/public/.recycler/. -type f \( -name 'Copy #*' -o -name '*.tmp' -o -ctime +3 \) -delete
+find $BASEDIR/homes/*/.recycler/. $BASEDIR/public/.recycler/. -empty -delete

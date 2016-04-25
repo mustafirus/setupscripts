@@ -1,4 +1,6 @@
 #!/bin/sh
 BASEDIR=/dozer/data/samba
-find $BASEDIR/homes/*/.recycler $BASEDIR/public/.recycler -type f \( -name 'Copy #*' -o -name '*.tmp' -o -name '~$*' -o -ctime +2 \) -delete
-find $BASEDIR/homes/*/.recycler $BASEDIR/public/.recycler \! -name .recycler -empty -delete
+BASEDIR=/tank/data/samba
+RECYCLERS="$BASEDIR/homes/*/.recycler $BASEDIR/public/.recycler $BASEDIR/adm/.recycler"
+find $RECYCLERS -type f \( -name 'Copy #*' -o -name '*.tmp' -o -name '~$*' -o -name '.~*#' -o -ctime +2 \) -delete
+find $RECYCLERS \! -name .recycler -empty -delete

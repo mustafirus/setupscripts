@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ ! -d /var/samba/homes/$1 ] ; then
+#    mkdir -p /var/samba/homes/$1/{.profile,.winhome} 
+    chown -R $1 /var/samba/homes/$1
+    chmod -R 0700 /var/samba/homes/$1
+fi 

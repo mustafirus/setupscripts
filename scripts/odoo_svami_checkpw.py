@@ -19,10 +19,11 @@ if argn >=3:
     pswd = sys.argv[2]
 
 
-url = 'http://server:10006'
-db = 'db'
-adminuser = 'admin'
-adminpswd = 'xxxxxx'
+#url = 'http://server.odoo.nt.bla:10006'
+url = 'http://xxxxx.odoo-ukraine.com'
+db = 'xxxxx'
+adminuser = 'adminxxxx'
+adminpswd = 'xxxxxxxxx'
 
 if pswd:
     common = xmlrpclib.ServerProxy('{}/xmlrpc/2/common'.format(url))
@@ -40,4 +41,3 @@ else:
 	print res[0]['login']
 
 exit(0)
-

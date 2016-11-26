@@ -19,7 +19,7 @@ part3 - 16384 logical(512) sectors BF07 reserved part
 
 3. Make zpool with degraded mirror of sda2 and sparse file 
 truncate -s 2T /tmp/sparsefile
-zpool create -o ashift=12 -R /root/newroot -O compression=lz4 -O atime=off rpool mirror sda /tmp/sparsefile
+zpool create -o ashift=12 -o cachefile=/root/zpool.cache -R /root/newroot -O compression=lz4 -O atime=off rpool mirror sda /tmp/sparsefile
 #ashift - says to use 4096 alighnment on vdev
 zpool offline rpool /tmp/sparsefile
 rm /tmp/sparsefile
@@ -27,6 +27,7 @@ rm /tmp/sparsefile
 4. Create new root 
 zfs create -p -o mountpoint=/ rpool/ROOT/pve-1
 rsync -vaxHAX --del / /root/newroot
+cp /root/zpool.cache /root/newroot/etc/zfs
 
 5. Create swap device 4G
 https://github.com/zfsonlinux/pkg-zfs/wiki/HOWTO-use-a-zvol-as-a-swap-device

@@ -18,33 +18,33 @@ part3 - 16384 logical(512) sectors BF07 reserved part
    i dont khow why
 
 3. Make zpool with degraded mirror of sda2 and sparse file 
-#truncate -s 2T /tmp/sparsefile
-#zpool create -o ashift=12 tank mirror sda /tmp/sparsefile
-ashift - says to use 4096 alighnment on vdev
-#zpool offline tank /tmp/sparsefile
-#rm /tmp/sparsefile
+truncate -s 2T /tmp/sparsefile
+zpool create -o ashift=12 -R /root/newroot -O compression=lz4 -O atime=off rpool mirror sda /tmp/sparsefile
+#ashift - says to use 4096 alighnment on vdev
+zpool offline rpool /tmp/sparsefile
+rm /tmp/sparsefile
 
 4. Create new root 
-zfs create -p tank/host/root
-rsync -vaxHAX --del /    /tank/host/root
+zfs create -p -o mountpoint=/ rpool/ROOT/pve-1
+rsync -vaxHAX --del / /root/newroot
 
 5. Create swap device 4G
 https://github.com/zfsonlinux/pkg-zfs/wiki/HOWTO-use-a-zvol-as-a-swap-device
-#zfs create -V 4G -b 4K tank/swap
-#zfs set com.sun:auto-snapshot=false tank/swap
-#zfs set sync=always tank/swap
-#mkswap -f /dev/tank/swap
-
+zfs create -V 4G -b $(getconf PAGESIZE) -o compression=zle \
+      -o logbias=throughput -o sync=always \
+      -o primarycache=metadata -o secondarycache=none \
+      -o com.sun:auto-snapshot=false rpool/swap
+      
 6. Chroot to new env
-#cd /tank/host/root
-#mount -B /dev dev
-#mount -B /proc proc
-#mount -B /sys sys
-#chroot .
+cd /root/newroot
+mount -B /dev dev
+mount -B /proc proc
+mount -B /sys sys
+chroot .
 
 6. Update the /etc/fstab file.
 comment old root and swap records, add new line below
-/dev/tank/swap  none  swap  defaults  0  0
+/dev/rpool/swap  none  swap  defaults  0  0
 
 6. Install grub
 zpool export tank

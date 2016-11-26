@@ -48,7 +48,9 @@ comment old root and swap records, add new line below
 /dev/rpool/swap  none  swap  defaults  0  0
 
 6. Install grub
-zpool export tank
+grub-install /dev/sda
+dpkg-reconfigure pve-kernel-`uname --kernel-release`
+#zpool export tank
 
 
 

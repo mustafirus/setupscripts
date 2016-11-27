@@ -19,7 +19,7 @@ part3 - 16384 logical(512) sectors BF07 reserved part
 
 3. Make zpool with degraded mirror of sda2 and sparse file 
 truncate -s 2T /tmp/sparsefile
-zpool create -o ashift=12 -o cachefile=/root/zpool.cache -R /root/newroot -O compression=lz4 -O atime=off rpool mirror sda /tmp/sparsefile
+zpool create -o ashift=12 -o cachefile=/root/zpool.cache -R /root/newroot -O compression=lz4 -O atime=off -O xattr=sa rpool mirror sda /tmp/sparsefile
 #ashift - says to use 4096 alighnment on vdev
 zpool offline rpool /tmp/sparsefile
 rm /tmp/sparsefile

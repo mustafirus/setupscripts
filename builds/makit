@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+dab init
+dab bootstrap --minimal
+dab install mc ca-certificates locales
+cp ../locale_tz rootfs
+dab exec /locale_tz
+rm rootfs/locale_tz
+install -m 700 -d rootfs/root/.ssh
+install -m 600 ../authorized_keys  rootfs/root/.ssh/authorized_keys
+dab finalize
+exit
+#sed -i -e '/PermitRootLogin/s/without-password/yes/' rootfs/etc/ssh/sshd_config
+dab: exec /z
+dab: enter
+dab: list
+dab: finalize
+dab: finalize

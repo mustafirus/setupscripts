@@ -45,18 +45,19 @@ mount -B /proc proc
 mount -B /sys sys
 chroot .
 
-6. Update the /etc/fstab file.
+Update the /etc/fstab file.
 comment old root and swap records, add new line below
 /dev/rpool/swap  none  swap  defaults  0  0
 
-6. Install grub
 grub-install /dev/sda
 dpkg-reconfigure pve-kernel-`uname --kernel-release`
 #zpool export tank
+Exit from chroot
+#exit
 
+reboot
 
-
-at end
+7. at end
 vgchange -an
 vgremove pve
 pvremove /dev/md1

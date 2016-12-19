@@ -1,6 +1,8 @@
 1. Break mirror
 #mdadm -f /dev/md1 /dev/sda1
 #mdadm -r /dev/md1 /dev/sda1
+#mdadm --zero-superblock /dev/sda1
+
 2. repartition disk
 for ex. 
 gdisk -l /dev/sda

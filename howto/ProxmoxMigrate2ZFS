@@ -62,6 +62,7 @@ vgchange -an
 vgremove pve
 pvremove /dev/md1
 mdadm -S /dev/md1
+mdadm --zero-superblock /dev/sdb1
 
 clone parttable to sdb
 #sgdisk -R /dev/sdb /dev/sda

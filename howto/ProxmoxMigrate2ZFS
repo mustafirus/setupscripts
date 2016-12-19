@@ -68,3 +68,6 @@ clone parttable to sdb
 #sgdisk -R /dev/sdb /dev/sda
 #sgdisk -G /dev/sdb
 zpool replace -f tank /tmp/sparsefile ata-WDC_WD2000FYYZ-01UL1B1_WD-WCC1P0797331
+
+grub-install /dev/sdb
+dpkg-reconfigure pve-kernel-`uname --kernel-release`

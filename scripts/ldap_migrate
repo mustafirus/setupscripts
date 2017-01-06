@@ -1,0 +1,39 @@
+#!/bin/sh
+
+ldbsearch -H ldap://10.xxx.1.2 -U DOMAIN/username%pass \
+-b "ou=Users,ou=Central Office,dc=old-domain,dc=loc" \
+--show-binary \
+'(objectclass=*)' \
+cn \
+displayName \
+distinguishedName \
+dn \
+givenName \
+name \
+objectCategory \
+objectClass \
+ou \
+sAMAccountName \
+sn \
+userPrincipalName \
+| sed -e's/OU=Central Office,DC=old-domain,DC=loc/dc=ad,dc=dom,dc=bla/' \
+-e's/DC=old-domain,DC=loc/dc=ad,dc=tyr,dc=bla/' \
+| ldbadd -H ldap://dc1.ad.xxx.bla \
+-U Admin \
+--password pass
+
+exit
+#sAMAccountType \
+#primaryGroupID \
+ldapsearch -LL -o ldif-wrap=no -h srv1-et01.elit-tyres.loc \
+-b "ou=Users,ou=Central Office,dc=old-domain,dc=loc" \
+-D "cn=golubev,ou=IT,ou=Users,ou=Central Office,dc=old-domain,dc=loc" \
+-w pass \
+'(&(objectClass=organizationalUnit))' objectClass ou distinguishedName name \
+| sed -e's/OU=Central Office,DC=old-domain,DC=loc/dc=ad,dc=dom,dc=bla/' \
+| ldapadd -x -H ldaps://dc1.ad.tyr.bla \
+-D "cn=Admin,cn=Users,dc=ad,dc=dom,dc=bla" \
+-w pass 
+#   > units
+
+exit

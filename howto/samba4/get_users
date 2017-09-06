@@ -1,0 +1,11 @@
+#!/bin/sh
+base="ou=clientname,dc=xxx,dc=other"
+user="cn=John Goe,$base"
+newbase="ou=xxxxx,dc=ad,dc=xxxxx,dc=bla"
+host=192.168.0.100
+
+ldapsearch -x -h$host -D"$user" -W -b"$base" '(objectClass=user)' dn objectClass cn sn givenName displayName name sAMAccountName | \
+sed "
+/objectClass: top/d
+s/$base/$newbase/I
+"

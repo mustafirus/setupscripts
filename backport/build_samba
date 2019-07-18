@@ -1,0 +1,7 @@
+#!/bin/sh
+dget -x http://http.debian.net/debian/pool/main/s/samba/samba_4.5.8+dfsg-2.dsc
+libtalloc-dev (>= 2.1.8~)
+libtevent-dev (>= 0.9.29~)
+libtdb-dev (>= 1.3.10~) 
+libldb-dev (>= 2:1.1.27~) 
+

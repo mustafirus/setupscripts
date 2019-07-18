@@ -1,0 +1,30 @@
+rmadison samba --architecture amd64
+dget -x http://http.debian.net/debian/pool/main/s/samba/samba_4.3.1+dfsg-1.dsc
+cd samba-4.3.1+dfsg
+mk-build-deps --install --remove
+dch --local ~bpo80+ --distribution jessie-backports "Rebuild for jessie-backports."
+dch -i
+debuild -us -uc
+
+fakeroot debian/rules binary
+dpkg-buildpackage -us -uc
+
+
+aptly db cleanup
+aptly repo create -distribution="jessie-backports" testing
+aptly repo add testing *.dsc *.deb
+aptly publish repo testing
+aptly publish repo -component=main,testing stable testing
+aptly publish update jessie-backports
+aptly repo move testing stable "$Source (samba)"
+aptly repo move testing stable 'Name (~ .*)'
+
+apt-get source --allow-unauthenticated samba
+debuild -us -uc
+dch -i
+quilt push -a
+quilt new my.patch
+quilt add zzz.c
+quilt refresh
+quilt pop -a
+

@@ -1,0 +1,7 @@
+#!/bin/sh
+apt-get install libgcrypt20-dev libpurple-dev libwebp-dev gettext
+git clone --recursive https://github.com/majn/telegram-purple
+cd telegram-purple
+git checkout debian-master
+git submodule update --recursive
+fakeroot ./debian/rules binary

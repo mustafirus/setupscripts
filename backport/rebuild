@@ -1,0 +1,7 @@
+#!/bin/sh
+echo '#### inst deps'
+mk-build-deps --install
+rm *build-deps*.deb
+dch --local ~bpo80+ --distribution jessie-backports "Rebuild for jessie-backports."
+echo '#### debuild'
+debuild -us -uc

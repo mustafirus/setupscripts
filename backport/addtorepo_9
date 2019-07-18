@@ -1,0 +1,6 @@
+#!/bin/bash
+cd ~/build
+aptly repo add stretch *.dsc *.deb
+aptly publish update stretch
+read -rsp $'Press any key to continue...\n' -n1
+apt-get update

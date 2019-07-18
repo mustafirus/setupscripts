@@ -1,0 +1,6 @@
+#!/bin/bash
+cd ~/build
+aptly repo add testing *.dsc *.deb
+aptly publish update jessie-backports
+read -rsp $'Press any key to continue...\n' -n1
+apt-get update

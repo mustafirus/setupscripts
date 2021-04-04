@@ -1,0 +1,19 @@
+#!/bin/bash
+#awk '/^dhcp-host/{ gsub(/dhcp-host=/,""); gsub(/,/," "); gsub(/24h/,"");
+#    if ($2 ~ /^[0-9]/) {print $1","$2","$3, $4, $5, $6, $7, $8} else {print $1","$3","$2, $4, $5, $6, $7, $8}
+#} ' hosts.conf
+for ip in $(awk -F, '{print $2}' trans); do
+    if ping -c1 -w1 $ip &>/dev/null; then
+	echo $ip ok
+    else
+	echo $ip fail
+    fi
+done
+exit
+while read ip name; do
+    if [ -z "$ip" ]; then
+	echo
+    else
+	echo $ip $name.trans.omx $name.br.trans.bla $name.ad.trans.bla $name
+    fi
+done < <(awk '!/^#/{ gsub(/,/," "); print $2,$3}' trans)
